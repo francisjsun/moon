@@ -1,4 +1,3 @@
-import vim
 try:
     from jupiter import copyright_utility
 except ImportError:
@@ -7,7 +6,10 @@ except ImportError:
     subprocess.run([sys.executable, "-m", "pip", "install", \
             "git+ssh://git@github.com/francisjsun/jupiter.git@master"])
     from jupiter import copyright_utility
+import vim
+import argparse
 
-
-cr = copyright_utility.Copyright(vim.current.buffer.name, vim.val("g:moon_author"))
-vim.command("let g:moon_copyright = " + cr.Get())
+if __name__ == "__main__":
+    cr = copyright_utility.Copyright(vim.eval("g:moon_plugin_copyright_file_path"), \
+            vim.eval("g:moon_plugin_copyright_author"))
+    vim.command("let g:moon_plugin_copyright_doc = " + cr.Get())
