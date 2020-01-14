@@ -1,0 +1,3 @@
+[submodule "external/jupiter"]
+	path = external/jupiter
+	url = https://github.com/francisjsun/jupiter.git
