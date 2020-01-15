@@ -18,6 +18,6 @@ function! s:GetCopyrightDoc(file_path, author)
   return g:moon_plugin_copyright_doc
 endfunction
 
-function! moon#plugin#copyright#AddCopyrightToCurrentFile(author)
-  call append(0, s:GetCopyrightDoc(expand('%:p'), a:author) . '\<CR>')
+function! moon#plugin#copyright#InsertCopyright(file_path, author)
+  call append(0, s:GetCopyrightDoc(a:file_path, a:author))
 endfunction
