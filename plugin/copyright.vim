@@ -1,6 +1,7 @@
-" moon plugin
+" Copyright (C) 2020 Francis Sun, all rights reserved.
 
-" here are 3 gloabl vim variable for interacting with moon.py
+
+" here are 3 gloabl vim variables for interacting with copyright.py
 " g:moon_plugin_copyright_author, g:moon_plugin_copyright_file_path, 
 " g:moon_plugin_copyright_doc
 let g:moon_plugin_copyright_author = "unknown"
@@ -19,5 +20,7 @@ function! s:GetCopyrightDoc(file_path, author)
 endfunction
 
 function! moon#plugin#copyright#InsertCopyright(file_path, author)
-  call append(0, s:GetCopyrightDoc(a:file_path, a:author))
+
+  call append(0, [s:GetCopyrightDoc(a:file_path, a:author),
+        \ "", ""]) " append two empty lines
 endfunction

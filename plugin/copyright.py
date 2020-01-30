@@ -1,13 +1,13 @@
-try:
-    from jupiter import copyright_utility
-except ImportError:
-    import subprocess
-    import sys
-    subprocess.run([sys.executable, "-m", "pip", "install", "--user", "-e", \
-            "../external/jupiter"])
-    from jupiter import copyright_utility
+# Copyright (C) 2020 Francis Sun, all rights reserved.
 
+
+import sys
+import os
 import vim
+
+sys.path.append(os.path.join(vim.eval("s:here"), "../external/jupiter"))
+from jupiter import copyright_utility
+
 
 if __name__ == "__main__":
     cr = copyright_utility.Copyright(vim.eval("g:moon_plugin_copyright_file_path"), \
