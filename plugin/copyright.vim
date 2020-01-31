@@ -1,6 +1,5 @@
 " Copyright (C) 2020 Francis Sun, all rights reserved.
 
-
 " here are 3 gloabl vim variables for interacting with copyright.py
 " g:moon_plugin_copyright_author, g:moon_plugin_copyright_file_path, 
 " g:moon_plugin_copyright_doc
@@ -20,7 +19,6 @@ function! s:GetCopyrightDoc(file_path, author)
 endfunction
 
 function! moon#plugin#copyright#InsertCopyright(file_path, author)
-
   call append(0, [s:GetCopyrightDoc(a:file_path, a:author),
         \ ""]) " append one empty line
 endfunction

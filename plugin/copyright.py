@@ -1,6 +1,5 @@
 # Copyright (C) 2020 Francis Sun, all rights reserved.
 
-
 import sys
 import os
 import vim
@@ -10,11 +9,12 @@ from jupiter import copyright_utility
 
 
 if __name__ == "__main__":
-    cr = copyright_utility.Copyright(vim.eval("g:moon_plugin_copyright_file_path"), \
+    cr = copyright_utility.Copyright(\
+            vim.eval("g:moon_plugin_copyright_file_path"),\
             vim.eval("g:moon_plugin_copyright_author"))
 
-    # if doc contains any literal quotes, then thoes quotes should be escaped to the 
-    # final let command
+    # if the doc contains any literal quotes, then all of thoes quotes should 
+    # be escaped for being used in the vim let command
     doc = cr.Get()
     raw_doc = ""
     for c in doc:
