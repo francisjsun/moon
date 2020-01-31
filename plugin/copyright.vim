@@ -22,5 +22,5 @@ endfunction
 function! moon#plugin#copyright#InsertCopyright(file_path, author)
 
   call append(0, [s:GetCopyrightDoc(a:file_path, a:author),
-        \ "", ""]) " append two empty lines
+        \ ""]) " append one empty line
 endfunction
