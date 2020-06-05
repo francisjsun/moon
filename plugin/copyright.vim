@@ -1,13 +1,9 @@
-" Copyright (C) 2020 Francis Sun, all rights reserved.
+" moon plugin
 
-" here are 3 gloabl vim variables for interacting with copyright.py
+" here are 3 gloabl vim variable for interacting with moon.py
 " g:moon_plugin_copyright_author, g:moon_plugin_copyright_file_path, 
 " g:moon_plugin_copyright_doc
 let g:moon_plugin_copyright_author = "unknown"
-if has("python3") != 1
-  echoerr "python3 is not found."
-  finish
-endif
 
 let s:here = expand('<sfile>:p:h')
 
@@ -18,7 +14,9 @@ function! s:GetCopyrightDoc(file_path, author)
   return g:moon_plugin_copyright_doc
 endfunction
 
-function! moon#plugin#copyright#InsertCopyright(file_path, author)
-  call append(0, [s:GetCopyrightDoc(a:file_path, a:author),
-        \ ""]) " append one empty line
+function! moon#plugin#copyright#AddCopyrightToCurrentFile(author)
+  call append(0, s:GetCopyrightDoc(expand('%:p'), a:author) . '\<CR>')
 endfunction
+
+command! InsertCopyright call moon#plugin#copyright#InsertCopyright
+      \ (expand('%:p'), g:fs_cfg['author'])
