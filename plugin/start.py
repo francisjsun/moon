@@ -54,26 +54,22 @@ if 'clang_format_py' not in moon_cfg:
     moon_cfg['clang_format_py'] = moon_find_file(
             clang_format_py_search_dir, clang_format_py_filename)
 
-vim_moon_cfg['clang_format_py'] = moon_cfg['clang_format_py']
-
 # copyright author
 if 'author' not in moon_cfg:
     moon_cfg['author'] = "Unknown"
 
-vim_moon_cfg['author'] = moon_cfg['author']
 
+# TODO move debug info into project cfg
+# if 'debug_info' not in moon_cfg:
+#     moon_cfg['debug_info'] = {'target': '', 'args': ''}
+# else:
+#     debug_info = moon_cfg['debug_info']
+#     if 'target' not in debug_info:
+#         moon_cfg['target'] = ''
+#     if 'args' not in debug_info:
+#         moon_cfg['args'] = ''
 
-# debug info
-if 'debug_info' not in moon_cfg:
-    moon_cfg['debug_info'] = {'target': '', 'args': ''}
-else:
-    debug_info = moon_cfg['debug_info']
-    if 'target' not in debug_info:
-        moon_cfg['target'] = ''
-    if 'args' not in debug_info:
-        moon_cfg['args'] = ''
-
-vim_moon_cfg['debug_info'] = vim.Dictionary(moon_cfg['debug_info'])
+vim_moon_cfg.update(moon_cfg)
 
 
 # save cfg file
