@@ -16,4 +16,3 @@ function! s:add_copyright_to_current_file()
 endfunction
 
 command! InsertCopyright call s:add_copyright_to_current_file()
-      \ ()
