@@ -1,16 +1,15 @@
 # Copyright (C) 2020 Francis Sun, all rights reserved.
 
+import vim
 import os
 
-import vim
+current_dir = vim.eval('s:here')
+os.sys.path.insert(0, os.path.join(current_dir, "../external/jupiter"))
+from jupiter import copyright_utility # noqa: E402
 
 
 def main():
-    current_dir = vim.eval("s:here")
-    os.sys.path.append(os.path.join(current_dir, "../external/jupiter"))
-
-    moon_cfg = vim.eval("g:moon_cfg")
-    from jupiter import copyright_utility
+    moon_cfg = vim.eval('g:moon_cfg')
     cr = copyright_utility.Copyright(
         vim.eval('g:moon_plugin_copyright_file_path'),
         moon_cfg['author'])
