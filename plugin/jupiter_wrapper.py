@@ -16,7 +16,7 @@ def get_copyright_doc():
     current_file = vim.eval('g:moon_current_file_path')
     author = moon_cfg.get_value('author')
     project_author = moon_project_cfg.get_value('author')
-    if project_author:
+    if project_author != '':
         author = project_author
     cr = copyright_utility.Copyright(current_file, author)
 

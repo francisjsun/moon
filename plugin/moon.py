@@ -21,7 +21,7 @@ moon_project_cfg = CfgJson('g:moon_project_cfg', moon_project_cfg_file_path,
                            {
                                'project_name': os.path.split(project_dir)[1],
                                'project_name_prefix': "",
-                               'author': "Unknown",
+                               'author': "",
                                'debug_info': {
                                    'target': "",
                                    'args': ""
