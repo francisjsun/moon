@@ -1,25 +1,28 @@
 " Copyright (C) 2020 Francis Sun, all rights reserved.
 
-" moon plugin
-let s:here = expand('<sfile>:p:h')
-
 " check some requirements
 if has('python3') == 0
   echoerr "No python3 supported!"
   finish
 endif
 
-" g:moon_cfg
-" { clang_format_py_path, author }
-" TODO  move debug_info: {target, args} to project cfg
+" moon plugin
+let s:here = expand('<sfile>:p:h')
+
+" append current path to python import path
+py3 << EOF
+import os
+import vim
+os.sys.path.append(vim.eval('s:here'))
+EOF
+
+" cfg files
 let g:moon_cfg = {'dirty': 0}
-
-function! s:moon_set_author(author)
-  let g:moon_cfg['author'] = a:author
-  let g:moon_cfg['dirty'] = 1
-endfunction
-
-command! -nargs=1 MoonSetAuthor call s:moon_set_author(<f-args>)
+let g:moon_project_dir = getcwd()
+let g:moon_project_cfg = {'dirty': 0}
+py3 << EOF
+import moon
+EOF
 
 " vimrc_pre.py
 execute 'py3f' s:here . '/start.py'
@@ -36,7 +39,7 @@ function! ClangFormatOnWrite()
     execute "py3f" g:moon_cfg['clang_format_py']
   endif
 endfunction
-augroup OnWrite
+augroup MoonOnWrite
   autocmd!
   autocmd BufWritePre *.h,*.cc,*cpp call ClangFormatOnWrite()
 augroup END
@@ -104,11 +107,61 @@ else
 endif
 endfunction
 
-command! OpenPairedFileForCurrentFile call s:moon_open_paried_file_for_current_file()
-nnoremap <leader>o :OpenPairedFileForCurrentFile<CR>
+command! MoonOpenPairedFileForCurrentFile 
+      \ call s:moon_open_paried_file_for_current_file()
+nnoremap <leader>o :MoonOpenPairedFileForCurrentFile<CR>
+
+" jupiter wrapper
+py3 << EOF
+import jupiter_wrapper
+EOF
+" insert copyright
+function! s:get_copyright_doc(file_path)
+  let g:moon_current_file_path = a:file_path
+py3 << EOF
+jupiter_wrapper.get_copyright_doc()
+EOF
+  return g:moon_copyright_doc
+endfunction
+
+function! s:add_copyright_to_current_file()
+  " [""] will append an aditional empty line
+  call append(0, [s:get_copyright_doc(expand('%')), ""])
+endfunction
+
+command! MoonInsertCopyright call s:add_copyright_to_current_file()
+
+" insert include guard
+function! s:get_include_guard(file_path)
+  let g:moon_current_file_path = a:file_path
+py3 << EOF
+jupiter_wrapper.get_include_guard()
+EOF
+  return g:moon_include_guard
+endfunction
+
+function! s:add_include_guard_to_current_file()
+  call append(2, s:get_include_guard(expand('%')))
+endfunction
+
+command! MoonInsertIncludeGuard call s:add_include_guard_to_current_file()
+augroup MoonNewFile
+  autocmd!
+  autocmd BufNewFile * call s:add_copyright_to_current_file()
+  autocmd BufNewFile *.h 
+        \ call s:add_include_guard_to_current_file() | :normal ddkO
+augroup END
+
+" update moon_project_file
+function! s:flush_moon_project_file()
+py3 << EOF
+moon.moon_project_cfg.flush(True)
+EOF
+endfunction
+command! MoonFlushMoonProjectFile call s:flush_moon_project_file()
 
 " call quit.py when vim before quits
-augroup PreVimQuit
+augroup MoonPreVimQuit
   autocmd!
   autocmd VimLeavePre * execute 'py3f' s:here . '/quit.py'
 augroup END
