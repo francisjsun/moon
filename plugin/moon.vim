@@ -49,62 +49,64 @@ let g:moon_paried_file_extension_src = ['c', 'cpp', 'cc']
 let g:moon_paried_file_extension_h = 'h'
 let g:moon_paried_file_extension_src_default = 'cpp'
 function! s:moon_open_paried_file_for_current_file()
-let l:file_extension = expand('%:e')
-let l:is_my_ext = 0 " 1: header, 2: src
-" check against h and src
-if l:file_extension == g:moon_paried_file_extension_h
-  let l:is_my_ext = 1
-endif
-if l:is_my_ext == 0
-  for ext in g:moon_paried_file_extension_src
-    if l:file_extension == ext
-      let l:is_my_ext = 2
-      break
-    endif
-  endfor
-endif
-if l:is_my_ext
-  let l:root_path = expand('%:p:r')
-  function! s:moon_open_file(file_path)
-    if buflisted(a:file_path)
-      execute ':b ' . a:file_path
-      return 1
-    elseif filereadable(a:file_path)
-      execute ':e ' . a:file_path
-      return 1
-    else
-      return 0
-    endif
-  endfunction
-  function! s:moon_prompt_to_create_new_file(file_path)
-    let l:usr_choice = confirm("Paired file: \n" . a:file_path . 
-          \ " was not found, create a new one? (Default: Yes)", "&Yes\n&No", 
-          \ 1, "Question")
-    if l:usr_choice == 1
-      execute ':e ' . a:file_path
-    endif
-  endfunction
-  if l:is_my_ext == 1 " header file
-    let l:found_paired = 0
+  let l:file_extension = expand('%:e')
+  let l:is_my_ext = 0 " 1: header, 2: src
+  " check against h and src
+  if l:file_extension == g:moon_paried_file_extension_h
+    let l:is_my_ext = 1
+  endif
+  if l:is_my_ext == 0
     for ext in g:moon_paried_file_extension_src
-      if s:moon_open_file(l:root_path . '.' . ext)
-        let l:found_paired = 1
+      if l:file_extension == ext
+        let l:is_my_ext = 2
         break
       endif
     endfor
-    if l:found_paired == 0
-      call s:moon_prompt_to_create_new_file(l:root_path . '.' . 
-            \ g:moon_paried_file_extension_src_default)
-    endif
-  elseif l:is_my_ext == 2 " src file
-    let l:header_path = l:root_path . '.' . g:moon_paried_file_extension_h
-    if s:moon_open_file(l:header_path) == 0
-      call s:moon_prompt_to_create_new_file(l:header_path)
-    endif
   endif
-else
-  echom 'Unsupported file extension: ' . l:file_extension
-endif
+  if l:is_my_ext
+    let l:root_path = expand('%:p:r')
+    function! s:moon_open_file(file_path)
+      if buflisted(a:file_path)
+        execute ':b ' . a:file_path
+        return 1
+      elseif filereadable(a:file_path)
+        execute ':e ' . a:file_path
+        return 1
+      else
+        return 0
+      endif
+    endfunction
+    function! s:moon_prompt_to_create_new_file(file_path)
+      let l:usr_choice = confirm("Paired file: \n" . a:file_path . 
+            \ " was not found, create a new one? (Default: Yes)", "&Yes\n&No", 
+            \ 1, "Question")
+      if l:usr_choice == 1
+        execute ':e ' . a:file_path
+      endif
+    endfunction
+    if l:is_my_ext == 1 " header file
+      let l:found_paired = 0
+      for ext in g:moon_paried_file_extension_src
+        if s:moon_open_file(l:root_path . '.' . ext) == 1
+          let l:found_paired = 1
+          break
+        endif
+      endfor
+      if l:found_paired == 0
+        let l:header_file_name = expand('%:t')
+        call s:moon_prompt_to_create_new_file(l:root_path . '.' . 
+              \ g:moon_paried_file_extension_src_default)
+        " call append(2, "#include \"". l:header_file_name . "\"") | :normal dd
+      endif
+    elseif l:is_my_ext == 2 " src file
+      let l:header_path = l:root_path . '.' . g:moon_paried_file_extension_h
+      if s:moon_open_file(l:header_path) == 0
+        call s:moon_prompt_to_create_new_file(l:header_path)
+      endif
+    endif
+  else
+    echom 'Unsupported file extension: ' . l:file_extension
+  endif
 endfunction
 
 command! MoonOpenPairedFileForCurrentFile 
@@ -124,12 +126,12 @@ EOF
   return g:moon_copyright_doc
 endfunction
 
-function! s:add_copyright_to_current_file()
+function! s:insert_copyright_to_current_file()
   " [""] will append an aditional empty line
   call append(0, [s:get_copyright_doc(expand('%')), ""])
 endfunction
 
-command! MoonInsertCopyright call s:add_copyright_to_current_file()
+command! MoonInsertCopyright call s:insert_copyright_to_current_file()
 
 " insert include guard
 function! s:get_include_guard(file_path)
@@ -140,16 +142,29 @@ EOF
   return g:moon_include_guard
 endfunction
 
-function! s:add_include_guard_to_current_file()
+function! s:insert_include_guard_to_current_file()
   call append(2, s:get_include_guard(expand('%')))
 endfunction
 
-command! MoonInsertIncludeGuard call s:add_include_guard_to_current_file()
+command! MoonInsertIncludeGuard call s:insert_include_guard_to_current_file()
+
+" boilerplate
+function! s:get_boilerplate(file_path)
+  let g:moon_current_file_path = a:file_path
+  let g:moon_boilerplate = []
+py3 << EOF
+jupiter_wrapper.get_boilerplate()
+EOF
+  return g:moon_boilerplate
+endfunction
+
+function! s:insert_boilerplate()
+  call append(0, s:get_boilerplate(expand('%')))
+endfunction
+
 augroup MoonNewFile
   autocmd!
-  autocmd BufNewFile * call s:add_copyright_to_current_file()
-  autocmd BufNewFile *.h 
-        \ call s:add_include_guard_to_current_file() | :normal ddkO
+  autocmd BufNewFile * call s:insert_boilerplate()
 augroup END
 
 " update moon_project_file

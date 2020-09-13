@@ -8,47 +8,80 @@ from moon import moon_project_cfg
 
 current_dir = vim.eval('s:here')
 os.sys.path.insert(0, os.path.join(current_dir, "../external/jupiter"))
-from jupiter import copyright_utility # noqa: E402
-from jupiter import include_guard # noqa: E402
+from jupiter import copyright_declaration # noqa: E402
+from jupiter import boilerplate # noqa: E402
 
 
-def get_copyright_doc():
-    current_file = vim.eval('g:moon_current_file_path')
+def get_author():
     author = moon_cfg.get_value('author')
     project_author = moon_project_cfg.get_value('author')
     if project_author != '':
         author = project_author
-    cr = copyright_utility.Copyright(current_file, author)
+    return author
 
-    # if doc contains any literal quotes, then thoes quotes should be escaped
-    # to the final let command
-    doc = cr.Get()
-    raw_doc = ""
-    for c in doc:
+
+def get_vim_let_string(src_str):
+    # if string contains any literal quotes, then thoes quotes should be
+    # escaped before used in let command
+    ret = ""
+    for c in src_str:
         if c == "\"":
-            raw_doc += "\\\""
+            ret += "\\\""
         else:
-            raw_doc += c
+            ret += c
 
-    vim.command("let g:moon_copyright_doc = " + "\"" + raw_doc + "\"")
+    return ret
+
+
+def get_copyright_doc():
+    current_file = vim.eval('g:moon_current_file_path')
+    cr = copyright_declaration.Copyright(current_file, get_author())
+
+    vim.command("let g:moon_copyright_doc = " + "\"" +
+                get_vim_let_string(cr.get_declaration()) + "\"")
+
+
+def get_prefix():
+    prefix = moon_project_cfg.get_value('project_name')
+    project_name_prefix = moon_project_cfg.get_value('project_name_prefix')
+    if project_name_prefix != '':
+        prefix = project_name_prefix + '_' + prefix
+    return prefix
 
 
 def get_include_guard():
     current_file = vim.eval('g:moon_current_file_path')
     project_dir = vim.eval('g:moon_project_dir')
     current_file = current_file.replace(project_dir, '')
-    prefix = moon_project_cfg.get_value('project_name')
-    project_name_prefix = moon_project_cfg.get_value('project_name_prefix')
-    if project_name_prefix != '':
-        prefix = project_name_prefix + '_' + prefix
-    include_guard_lines = include_guard.get_include_guard(
-        current_file, prefix)
+    prefix = get_prefix()
+    include_guard_lines = boilerplate.get_include_guard(current_file, prefix)
     vim.command("let g:moon_include_guard = [" +
                 "\"" + include_guard_lines[0] + "\","
                 "\"" + include_guard_lines[1] + "\","
                 "\"\",\"\","  # two empty lines
                 "\"" + include_guard_lines[2] + "\"]"
                 )
+
+
+def get_boilerplate():
+    current_file = vim.eval('g:moon_current_file_path')
+    project_dir = vim.eval('g:moon_project_dir')
+    current_file = current_file.replace(project_dir, '')
+    prefix = get_prefix()
+
+    bd = boilerplate.get(project_dir, current_file, get_author(), prefix)
+    vim_bd = vim.bindeval('g:moon_boilerplate')
+    if 'copyright_declaration' in bd:
+        vim_bd.extend([get_vim_let_string(bd['copyright_declaration']),
+                       ""])
+    if 'include_guard' in bd:
+        include_guard_lines = bd['include_guard']
+        vim_bd.extend([include_guard_lines[0],
+                       include_guard_lines[1],
+                       "", "",
+                       include_guard_lines[2]])
+    if 'cpp_include_header' in bd:
+        vim_bd.extend([bd['cpp_include_header']])
 
 
 if __name__ == "__main__":
