@@ -50,6 +50,7 @@ class CfgJson:
             try:
                 with open(self.path, 'w') as f:
                     json.dump(self.cfg, f, indent=4)
+                    self.dirty = False
                     return True
             except OSError:
                 return False
