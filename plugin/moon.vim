@@ -17,9 +17,7 @@ os.sys.path.append(vim.eval('s:here'))
 EOF
 
 " cfg files
-let g:moon_cfg = {'dirty': 0}
 let g:moon_project_dir = getcwd()
-let g:moon_project_cfg = {'dirty': 0}
 py3 << EOF
 import moon
 EOF
@@ -143,7 +141,7 @@ EOF
 endfunction
 
 function! s:insert_include_guard_to_current_file()
-  call append(2, s:get_include_guard(expand('%')))
+  call append(line("."), s:get_include_guard(expand('%')))
 endfunction
 
 command! MoonInsertIncludeGuard call s:insert_include_guard_to_current_file()

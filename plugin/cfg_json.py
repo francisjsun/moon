@@ -7,18 +7,21 @@ import vim
 
 class CfgJson:
     def __init__(self, vim_cfg_name, path, boilerplate):
+        self.vim_cfg_name = vim_cfg_name
         self.dirty = False
+        vim.command("let " + vim_cfg_name + " = {}")
         self.vim_cfg = vim.bindeval(vim_cfg_name)
         self.path = path
         self.boilerplate = boilerplate
-        self.cfg = {}
         if os.path.isfile(path):
             with open(path) as f:
                 try:
-                    self.cfg = json.load(f)
-                    self.vim_cfg.update(self.cfg)
+                    cfg = json.load(f)
+                    self.vim_cfg.update(cfg)
                 except BaseException:
-                    self.cfg = {}
+                    vim.command("let " + vim_cfg_name + " = {}")
+                    # re-bindeval due to new dictionary created
+                    self.vim_cfg = vim.bindeval(vim_cfg_name)
 
         self.fill_with_boilerplate()
 
@@ -29,27 +32,30 @@ class CfgJson:
         self.path = path
 
     def fill_with_boilerplate(self):
-        if self.cfg is not None:
-            for k in self.boilerplate:
-                if k not in self.cfg:
-                    self.set_value(k, self.boilerplate[k])
+        for k in self.boilerplate:
+            if k not in self.vim_cfg:
+                # fill up with boilerplate will not make cfg dirty
+                self.vim_cfg[k] = self.boilerplate[k]
 
     def set_value(self, name, value):
-        self.cfg[name] = value
         self.vim_cfg[name] = value
         self.dirty = True
 
     def get_value(self, name):
-        if name in self.cfg:
-            return self.cfg[name]
-        else:
-            return None
+        # see json dump below
+        cfg = vim.eval(self.vim_cfg_name)
+        return cfg[name]
 
     def flush(self, force=False):
         if force or self.dirty:
             try:
                 with open(self.path, 'w') as f:
-                    json.dump(self.cfg, f, indent=4)
+                    # need to use vim.eval here, can't simply use the variable
+                    # returned by bindval, that only gives byte type in both
+                    # key and value of the dictionary
+                    cfg = vim.eval(self.vim_cfg_name)
+                    # dump a sorted json
+                    json.dump(dict(sorted(cfg.items())), f, indent=4)
                     self.dirty = False
                     return True
             except OSError:
