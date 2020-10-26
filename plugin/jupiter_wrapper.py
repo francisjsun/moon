@@ -2,9 +2,7 @@
 
 import vim
 import os
-from moon import moon_cfg
-from moon import moon_project_cfg
-
+import moon
 
 current_dir = vim.eval('s:here')
 os.sys.path.insert(0, os.path.join(current_dir, "../external/jupiter"))
@@ -13,8 +11,8 @@ from jupiter import boilerplate # noqa: E402
 
 
 def get_author():
-    author = moon_cfg.get_value('author')
-    project_author = moon_project_cfg.get_value('author')
+    author = moon.moon_cfg.get_value('author')
+    project_author = moon.moon_project_cfg.get_value('author')
     if project_author != '':
         author = project_author
     return author
@@ -42,8 +40,9 @@ def get_copyright_doc():
 
 
 def get_prefix():
-    prefix = moon_project_cfg.get_value('project_name')
-    project_name_prefix = moon_project_cfg.get_value('project_name_prefix')
+    prefix = moon.moon_project_cfg.get_value('project_name')
+    project_name_prefix = moon.moon_project_cfg.get_value(
+        'project_name_prefix')
     if project_name_prefix != '':
         prefix = project_name_prefix + '_' + prefix
     return prefix
@@ -51,10 +50,11 @@ def get_prefix():
 
 def get_include_guard():
     current_file = vim.eval('g:moon_current_file_path')
-    project_dir = vim.eval('g:moon_project_dir')
-    current_file = current_file.replace(project_dir, '')
+    current_file = current_file.replace(moon.moon_project_dir, '')
     prefix = get_prefix()
-    include_guard_lines = boilerplate.get_include_guard(current_file, prefix)
+    include_guard_lines = boilerplate.get_include_guard(
+        current_file, moon.moon_project_cfg.get_value('macro_ignored_dir'),
+        prefix)
     vim.command("let g:moon_include_guard = [" +
                 "\"" + include_guard_lines[0] + "\","
                 "\"" + include_guard_lines[1] + "\","
@@ -65,11 +65,12 @@ def get_include_guard():
 
 def get_boilerplate():
     current_file = vim.eval('g:moon_current_file_path')
-    project_dir = vim.eval('g:moon_project_dir')
-    current_file = current_file.replace(project_dir, '')
+    current_file = current_file.replace(moon.moon_project_dir, '')
     prefix = get_prefix()
 
-    bd = boilerplate.get(project_dir, current_file, get_author(), prefix)
+    bd = boilerplate.get(
+        moon.moon_project_dir, current_file, get_author(),
+        moon.moon_project_cfg.get_value('macro_ignored_dir'), prefix)
     vim_bd = vim.bindeval('g:moon_boilerplate')
     if 'copyright_declaration' in bd:
         vim_bd.extend([get_vim_let_string(bd['copyright_declaration']),

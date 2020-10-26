@@ -8,22 +8,31 @@ import vim
 class CfgJson:
     def __init__(self, vim_cfg_name, path, boilerplate):
         self.vim_cfg_name = vim_cfg_name
-        self.dirty = False
-        vim.command("let " + vim_cfg_name + " = {}")
-        self.vim_cfg = vim.bindeval(vim_cfg_name)
-        self.path = path
         self.boilerplate = boilerplate
-        if os.path.isfile(path):
-            with open(path) as f:
-                try:
-                    cfg = json.load(f)
-                    self.vim_cfg.update(cfg)
-                except BaseException:
-                    vim.command("let " + vim_cfg_name + " = {}")
-                    # re-bindeval due to new dictionary created
-                    self.vim_cfg = vim.bindeval(vim_cfg_name)
+        self.path = None
+        self.dirty = False
+        self.initialize(path)
 
-        self.fill_with_boilerplate()
+    def initialize(self, path):
+        if path == self.path:
+            return
+        else:
+            self.flush()  # flush previous
+            self.dirty = False
+            vim.command("let " + self.vim_cfg_name + " = {}")
+            self.vim_cfg = vim.bindeval(self.vim_cfg_name)
+            self.path = path
+            if os.path.isfile(path):
+                with open(path) as f:
+                    try:
+                        cfg = json.load(f)
+                        self.vim_cfg.update(cfg)
+                    except BaseException:
+                        vim.command("let " + self.vim_cfg_name + " = {}")
+                        # re-bindeval due to new dictionary created
+                        self.vim_cfg = vim.bindeval(self.vim_cfg_name)
+
+            self.fill_with_boilerplate()
 
     def update_boilerplater(self, name, value):
         self.boilerplate[name] = value

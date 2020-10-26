@@ -14,11 +14,6 @@ py3 << EOF
 import os
 import vim
 os.sys.path.append(vim.eval('s:here'))
-EOF
-
-" cfg files
-let g:moon_project_dir = getcwd()
-py3 << EOF
 import moon
 EOF
 
@@ -165,13 +160,25 @@ augroup MoonNewFile
   autocmd BufNewFile * call s:insert_boilerplate()
 augroup END
 
-" update moon_project_file
+" flush moon_project_file
 function! s:flush_moon_project_file()
 py3 << EOF
 moon.moon_project_cfg.flush(True)
 EOF
 endfunction
 command! MoonFlushMoonProjectFile call s:flush_moon_project_file()
+
+" setup moon project
+function! s:setup_moon_project()
+py3 << EOF
+moon.setup_moon_project()
+EOF
+endfunction
+
+augroup MoonEnterFile
+  autocmd!
+  autocmd BufEnter * call s:setup_moon_project()
+augroup END
 
 " call quit.py when vim before quits
 augroup MoonPreVimQuit
