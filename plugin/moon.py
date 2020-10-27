@@ -5,6 +5,11 @@ import os
 from cfg_json import CfgJson
 
 
+def vim_setup():
+    vim.command("chdir " + moon_project_dir)
+    vim.command("set makeprg=" + moon_project_cfg.get_value('makeprg'))
+
+
 # moon cfg
 moon_cfg_file_name = "moon_cfg.json"
 moon_cfg_file_path = os.path.join(vim.eval("g:vimrc_dir"), moon_cfg_file_name)
@@ -54,11 +59,13 @@ moon_project_cfg = CfgJson(
         # ignored dir relatived to project dir
         'macro_ignored_dir': ["src"],
         'author': "",
+        'makeprg': "cmake",
         'debug_info': {
             'target': "",
             'args': ""
         }
     })
+vim_setup()
 
 
 def find_file_backforward(dir_name, dst_file_name):
@@ -94,4 +101,4 @@ def setup_moon_project():
     moon_project_cfg.update_boilerplater('project_name', os.path.basename(
         moon_project_dir))
     moon_project_cfg.initialize(moon_project_cfg_file_path)
-    vim.eval("chdir(\"" + moon_project_dir + "\")")
+    vim_setup()
