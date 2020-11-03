@@ -4,8 +4,7 @@ import moon
 
 
 def main():
-    moon.setup_clang_format()
-    moon.setup_moon_project()
+    moon.start()
 
 
 if __name__ == "__main__":

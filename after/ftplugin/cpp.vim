@@ -10,7 +10,7 @@ setlocal cino+=g1 cino+=h1
 let g:ycm_clangd_args = ['--header-insertion=never']
 " set aditional semantic triggers for c-family, any two characters
 let g:ycm_semantic_triggers = {
-      \ 'c,cpp,objc': ['re!\w{2}'],
+      \ 'c,cpp,hpp,objc': ['re!\w{2}'],
       \ }
 
 " gdb settings

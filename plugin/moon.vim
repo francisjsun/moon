@@ -39,15 +39,17 @@ augroup END
 
 " open paired source or header file for current file
 let g:moon_paried_file_extension_src = ['c', 'cpp', 'cc']
-let g:moon_paried_file_extension_h = 'h'
-let g:moon_paried_file_extension_src_default = 'cpp'
+let g:moon_paried_file_extension_h = ['h', 'hpp']
 function! s:moon_open_paried_file_for_current_file()
   let l:file_extension = expand('%:e')
   let l:is_my_ext = 0 " 1: header, 2: src
-  " check against h and src
-  if l:file_extension == g:moon_paried_file_extension_h
-    let l:is_my_ext = 1
-  endif
+  " check against h or hpp and src
+  for ext in g:moon_paried_file_extension_h
+    if l:file_extension == ext
+      let l:is_my_ext = 1
+      break
+    endif
+  endfor
   if l:is_my_ext == 0
     for ext in g:moon_paried_file_extension_src
       if l:file_extension == ext
@@ -77,8 +79,8 @@ function! s:moon_open_paried_file_for_current_file()
         execute ':e ' . a:file_path
       endif
     endfunction
+    let l:found_paired = 0
     if l:is_my_ext == 1 " header file
-      let l:found_paired = 0
       for ext in g:moon_paried_file_extension_src
         if s:moon_open_file(l:root_path . '.' . ext) == 1
           let l:found_paired = 1
@@ -86,15 +88,21 @@ function! s:moon_open_paried_file_for_current_file()
         endif
       endfor
       if l:found_paired == 0
-        let l:header_file_name = expand('%:t')
+        " create source file
         call s:moon_prompt_to_create_new_file(l:root_path . '.' . 
-              \ g:moon_paried_file_extension_src_default)
-        " call append(2, "#include \"". l:header_file_name . "\"") | :normal dd
+              \ g:moon_project_cfg['cpp_file_default_extension'][1])
       endif
     elseif l:is_my_ext == 2 " src file
-      let l:header_path = l:root_path . '.' . g:moon_paried_file_extension_h
-      if s:moon_open_file(l:header_path) == 0
-        call s:moon_prompt_to_create_new_file(l:header_path)
+      for ext in g:moon_paried_file_extension_h
+        if s:moon_open_file(l:root_path . '.' . ext) == 1
+          let l:found_paired = 1
+          break
+        endif
+      endfo
+      if l:found_paired == 0
+        " create header file
+        call s:moon_prompt_to_create_new_file(l:root_path . '.' . 
+              \ g:moon_project_cfg['cpp_file_default_extension'][0])
       endif
     endif
   else
@@ -168,16 +176,16 @@ EOF
 endfunction
 command! MoonFlushMoonProjectFile call s:flush_moon_project_file()
 
-" setup moon project
-function! s:setup_moon_project()
+" update moon project
+function! s:update_moon_project()
 py3 << EOF
-moon.setup_moon_project()
+moon.update_moon_project()
 EOF
 endfunction
 
 augroup MoonEnterFile
   autocmd!
-  autocmd BufEnter * call s:setup_moon_project()
+  autocmd BufEnter * call s:update_moon_project()
 augroup END
 
 " call quit.py when vim before quits
