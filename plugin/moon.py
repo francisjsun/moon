@@ -40,7 +40,8 @@ def vim_setup():
 # moon cfg
 moon_cfg_file_name = "moon_cfg.json"
 moon_cfg_file_path = os.path.join(vim.eval("g:vimrc_dir"), moon_cfg_file_name)
-moon_cfg = CfgJson('g:moon_cfg', moon_cfg_file_path, {'author': "Unkown"})
+moon_cfg = CfgJson('g:moon_cfg', moon_cfg_file_path, {'author': "Unkown",
+                                                      'clang_format_py': ""})
 
 
 def find_file(dir_name, dst_file_name):
